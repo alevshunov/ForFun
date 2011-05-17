@@ -6,7 +6,12 @@ using Example2.StatusChecker;
 
 namespace Example2.UserMailChecking
 {
-    public class UserMailInfoChecker : IAction
+    public interface IUserMailInfoChecker : IAction
+    {
+        
+    }
+
+    public class UserMailInfoChecker : IUserMailInfoChecker
     {
         private readonly IResultHandler<MailRepository.MailInfo> _statusHandler;
         private readonly IUserInfo _infoProvider;

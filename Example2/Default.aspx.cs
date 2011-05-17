@@ -9,58 +9,125 @@ using Example2.StatusChecker;
 using Example2.UserMailChecking;
 using Example2.UserOnlineChecking;
 using Example2.UserOnlineChecking.ResultAdapter;
-
+using Microsoft.Practices.Unity;
 
 namespace Example2
 {
     public partial class Default : Page
     {
-        internal class UserMailCheckDataProvider : UserMailChecking.IUserInfo, UserMailChecking.IResultHandler<MailRepository.MailInfo>
+        public class UserMailCheckAdapter : UnityContainer
         {
-            private readonly Default _page;
-
-            public UserMailCheckDataProvider(Default page)
+            public class UserInfoProvider : UserMailChecking.IUserInfo
             {
-                _page = page;
+                private readonly Default _page;
+
+                public UserInfoProvider(Default page)
+                {
+                    _page = page;
+                }
+                
+                public string UserName
+                {
+                    get { return _page.UserNameMailCheckTextBox.Text; }
+                }
             }
 
-            public string UserName
+            public class ResultHandler : IResultHandler<MailRepository.MailInfo>
             {
-                get { return _page.UserNameMailCheckTextBox.Text; }
+                private Default _page;
+                private UserMailChecking.IUserInfo _dataProvider;
+
+                //public ResultHandler(Default page, UserMailChecking.IUserInfo dataProvider)
+                //{
+                //    _page = page;
+                //    _dataProvider = dataProvider;
+                //}
+
+                public Default Page
+                {
+                    get { return _page; }
+                    set { _page = value; }
+                }
+
+                public UserMailChecking.IUserInfo DataProvider
+                {
+                    get { return _dataProvider; }
+                    set { _dataProvider = value; }
+                }
+
+                public void ShowNoMessagesInfo()
+                {
+                    _page.Mails.Visible = false;
+                    _page.MailCount.Text = "<b>" + _dataProvider.UserName + "</b> has no mail.";
+                }
+
+                public void ShowMessages(List<MailRepository.MailInfo> status)
+                {
+                    _page.Mails.Visible = true;
+                    _page.Mails.DataSource = status;
+                    _page.Mails.DataBind();
+                    _page.MailCount.Text = "<b>" + _dataProvider.UserName + "</b> has " + status.Count + " mail(s).";
+                }
             }
 
-            public void ShowNoMessagesInfo()
+            public UserMailCheckAdapter(Default page)
             {
-                _page.Mails.Visible = false;
-                _page.MailCount.Text = "<b>" + UserName + "</b> has no mail.";
+                this.RegisterType<IMailRepository, MailRepository>();
+                this.RegisterType<UserMailChecking.IUserInfo, UserInfoProvider>(new InjectionConstructor(page));
+                this.RegisterType<IResultHandler<MailRepository.MailInfo>, ResultHandler>(new InjectionProperty("Page", page), new InjectionProperty("DataProvider"));
+                this.RegisterType<IUserMailInfoChecker, UserMailInfoChecker>();
             }
 
-            public void ShowMessages(List<MailRepository.MailInfo> status)
+            public IUserMailInfoChecker GetChecker()
             {
-                _page.Mails.Visible = true;
-                _page.Mails.DataSource = status;
-                _page.Mails.DataBind();
-                _page.MailCount.Text = "<b>" + UserName + "</b> has " + status.Count + " mail(s).";
+                return this.Resolve<IUserMailInfoChecker>();
             }
         }
-
-        internal class UserOnlineCheckDataProvider : UserOnlineChecking.IUserInfo, UserOnlineChecking.IResultHandler
+        
+        public class UserOnlineCheckAdapter : UnityContainer
         {
-            private readonly Default _page;
-
-            public UserOnlineCheckDataProvider(Default page)
+            public class UserInfoProvider : UserOnlineChecking.IUserInfo
             {
-                _page = page;
+                private readonly Default _page;
+
+                public UserInfoProvider(Default page)
+                {
+                    _page = page;
+                }
+
+                public string UserName
+                {
+                    get { return _page.UserNameStatusCheckTextBox.Text; }
+                }
             }
 
-            public string UserName
+            public class ResultHandler : UserOnlineChecking.IResultHandler
             {
-                get { return _page.UserNameStatusCheckTextBox.Text; }
+                private readonly Default _page;
+
+                public ResultHandler(Default page)
+                {
+                    _page = page;
+                }
+
+                public void ShowUserStatusMessage(string message)
+                {
+                    _page.UserStatusMessageLabel.Text = message;
+                }
             }
 
-            public void ShowUserStatusMessage(string message)
+            public UserOnlineCheckAdapter(Default page)
             {
-                _page.UserStatusMessageLabel.Text = message;
+                this.RegisterType<IUserRepository, UserRepository>();
+                this.RegisterType<UserOnlineChecking.IUserInfo, UserInfoProvider>(new InjectionConstructor(page));
+                this.RegisterType<IResultHandler, ResultHandler>(new InjectionConstructor(page));
+                this.RegisterType<IResultAdapter, ResultAdapter>();
+                this.RegisterType<IUserStatusChecker, UserStatusChecker>();
+            }
+
+            public IUserStatusChecker GetChecker()
+            {
+                return this.Resolve<IUserStatusChecker>();
             }
         }
 
@@ -68,34 +135,11 @@ namespace Example2
         {
         }
 
-        private UserStatusChecker UserStatusChecker
-        {
-            get
-            {
-                var userRepository = new UserRepository();
-                var dataProvider = new UserOnlineCheckDataProvider(this);
-                var resultAdapter = new ResultAdapter(dataProvider);
-                var checker = new UserStatusChecker(resultAdapter, dataProvider, userRepository);
-                return checker;
-            }
-        }
-
-        private UserMailInfoChecker UserMailInfoChecker
-        {
-            get
-            {
-                var repository = new MailRepository();
-                var dataProvider = new UserMailCheckDataProvider(this);
-                var checker = new UserMailInfoChecker(dataProvider, dataProvider, repository);
-                return checker;
-            }
-        }
-
         protected void CheckUserStatusButtonClicked(object sender, EventArgs e)
         {
             try
             {
-                UserStatusChecker.Process();
+                new UserOnlineCheckAdapter(this).GetChecker().Process();
             }
             catch(Exception ex)
             {
@@ -108,7 +152,7 @@ namespace Example2
         {
             try
             {
-                UserMailInfoChecker.Process();
+                new UserMailCheckAdapter(this).GetChecker().Process();
             }
             catch (Exception ex)
             {

@@ -6,7 +6,12 @@ using Example2.UserOnlineChecking.ResultAdapter;
 
 namespace Example2.UserOnlineChecking
 {
-    public class UserStatusChecker : IAction
+    public interface IUserStatusChecker : IAction
+    {
+        
+    }
+
+    public class UserStatusChecker : IUserStatusChecker
     {
         private readonly IResultAdapter _resultAdapter;
         private readonly IUserInfo _infoProvider;
