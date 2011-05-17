@@ -83,6 +83,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseUnityContainer.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

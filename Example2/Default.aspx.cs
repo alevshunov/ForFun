@@ -15,7 +15,7 @@ namespace Example2
 {
     public partial class Default : Page
     {
-        public class UserMailCheckAdapter : UnityContainer
+        public class UserMailCheckAdapter : BaseUnityContainer
         {
             public class UserInfoProvider : UserMailChecking.IUserInfo
             {
@@ -70,12 +70,8 @@ namespace Example2
                 }
             }
 
-            public UserMailCheckAdapter(Default page)
+            public UserMailCheckAdapter(Default page) : base(page)
             {
-                this.RegisterType<IMailRepository, MailRepository>();
-                this.RegisterType<UserMailChecking.IUserInfo, UserInfoProvider>(new InjectionConstructor(page));
-                this.RegisterType<IResultHandler<MailRepository.MailInfo>, ResultHandler>(new InjectionProperty("Page", page), new InjectionProperty("DataProvider"));
-                this.RegisterType<IUserMailInfoChecker, UserMailInfoChecker>();
             }
 
             public IUserMailInfoChecker GetChecker()
@@ -83,8 +79,8 @@ namespace Example2
                 return this.Resolve<IUserMailInfoChecker>();
             }
         }
-        
-        public class UserOnlineCheckAdapter : UnityContainer
+
+        public class UserOnlineCheckAdapter : BaseUnityContainer
         {
             public class UserInfoProvider : UserOnlineChecking.IUserInfo
             {
@@ -116,13 +112,9 @@ namespace Example2
                 }
             }
 
-            public UserOnlineCheckAdapter(Default page)
+            public UserOnlineCheckAdapter(Default page) : base(page)
             {
-                this.RegisterType<IUserRepository, UserRepository>();
-                this.RegisterType<UserOnlineChecking.IUserInfo, UserInfoProvider>(new InjectionConstructor(page));
-                this.RegisterType<IResultHandler, ResultHandler>(new InjectionConstructor(page));
-                this.RegisterType<IResultAdapter, ResultAdapter>();
-                this.RegisterType<IUserStatusChecker, UserStatusChecker>();
+
             }
 
             public IUserStatusChecker GetChecker()
