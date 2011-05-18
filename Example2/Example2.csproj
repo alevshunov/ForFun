@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Default.aspx" />
+    <Content Include="Services\UserStatusChecker.asmx" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -83,7 +84,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseUnityContainer.cs" />
+    <Compile Include="Common\BaseUnityContainer.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -91,24 +92,34 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Common\ErrorHandler.cs" />
+    <Compile Include="Default.partial.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Repository\IMailRepository.cs" />
     <Compile Include="Repository\MailRepository.cs" />
-    <Compile Include="UserMailChecking\IUserInfo.cs" />
-    <Compile Include="UserMailChecking\IResultHandler.cs" />
-    <Compile Include="UserMailChecking\UserMailInfoChecker.cs" />
-    <Compile Include="UserOnlineChecking\IUserInfo.cs" />
-    <Compile Include="StatusChecker\IAction.cs" />
-    <Compile Include="UserOnlineChecking\ResultAdapter\IResultAdapter.cs" />
+    <Compile Include="Common\IErrorHandler.cs" />
+    <Compile Include="Services\UserStatusChecker.partial.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Services\UserStatusChecker.asmx.cs">
+      <DependentUpon>UserStatusChecker.asmx</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Bll\UserMailChecking\IUserInfo.cs" />
+    <Compile Include="Bll\UserMailChecking\IResultHandler.cs" />
+    <Compile Include="Bll\UserMailChecking\UserMailInfoChecker.cs" />
+    <Compile Include="Bll\UserStatusChecking\IUserInfo.cs" />
     <Compile Include="Repository\IUserRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\UserRepository.cs" />
-    <Compile Include="UserOnlineChecking\IResultHandler.cs" />
-    <Compile Include="UserOnlineChecking\ResultAdapter\ResultAdapter.cs" />
-    <Compile Include="UserOnlineChecking\UserStatusChecker.cs" />
+    <Compile Include="Bll\UserStatusChecking\IResultHandler.cs" />
+    <Compile Include="Bll\UserStatusChecking\UserStatusChecker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <ProjectExtensions>
