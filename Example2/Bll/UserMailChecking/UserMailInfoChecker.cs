@@ -1,29 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Example2.Common;
 using Example2.Repository;
-using Example2.StatusChecker;
 
-namespace Example2.UserMailChecking
+namespace Example2.Bll.UserMailChecking
 {
-    public interface IUserMailInfoChecker : IAction
+    public interface IUserMailInfoChecker 
     {
-        
+        void Process();
     }
 
     public class UserMailInfoChecker : IUserMailInfoChecker
     {
-        private readonly IResultHandler<MailRepository.MailInfo> _statusHandler;
+        private readonly IResultHandler<MailRepository.MailInfo> _resultHandler;
         private readonly IUserInfo _infoProvider;
         private readonly IMailRepository _repository;
+        private readonly IErrorLogger _errorLogger;
 
         public UserMailInfoChecker(
-            IResultHandler<MailRepository.MailInfo> statusHandler,
+            IResultHandler<MailRepository.MailInfo> resultHandler,
             IUserInfo infoProvider, 
-            IMailRepository repository)
+            IMailRepository repository,
+            IErrorLogger errorLogger)
         {
-            _statusHandler = statusHandler;
+            _resultHandler = resultHandler;
             _repository = repository;
+            _errorLogger = errorLogger;
             _infoProvider = infoProvider;
         }
 
@@ -33,9 +36,9 @@ namespace Example2.UserMailChecking
                 throw new ArgumentNullException("status");
 
             if (status.Count == 0)
-                _statusHandler.ShowNoMessagesInfo();
+                _resultHandler.ShowNoMessagesInfo();
             else
-                _statusHandler.ShowMessages(status);
+                _resultHandler.ShowMessages(status);
         }
 
         protected List<MailRepository.MailInfo> GetStatus(string userName)
@@ -49,8 +52,16 @@ namespace Example2.UserMailChecking
 
         public void Process()
         {
-            var info = GetStatus(_infoProvider.UserName);
-            Process(info);
+            try
+            {
+                var info = GetStatus(_infoProvider.UserName);
+                Process(info);
+            }
+            catch(Exception ex)
+            {
+                _errorLogger.Log(ex, this);
+                _resultHandler.ErrorHappend(ex);
+            }
         }
     }
 }

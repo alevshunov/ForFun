@@ -1,30 +1,32 @@
 ﻿using System;
 using System.Linq;
+using Example2.Common;
 using Example2.Repository;
-using Example2.StatusChecker;
-using Example2.UserOnlineChecking.ResultAdapter;
 
-namespace Example2.UserOnlineChecking
+namespace Example2.Bll.UserStatusChecking
 {
-    public interface IUserStatusChecker : IAction
+    public interface IUserStatusChecker
     {
-        
+        void Process();
     }
 
     public class UserStatusChecker : IUserStatusChecker
     {
-        private readonly IResultAdapter _resultAdapter;
+        private readonly IResultHandler _resultHandler;
         private readonly IUserInfo _infoProvider;
         private readonly IUserRepository _repository;
+        private readonly IErrorLogger _errorLogger;
 
         public UserStatusChecker(
-            IResultAdapter resultAdapter,
+            IResultHandler resultHandler,
             IUserInfo infoProvider,
-            IUserRepository repository)
+            IUserRepository repository,
+            IErrorLogger errorLogger)
         {
-            _resultAdapter = resultAdapter;
+            _resultHandler = resultHandler;
             _infoProvider = infoProvider;
             _repository = repository;
+            _errorLogger = errorLogger;
         }
 
         protected void Process(bool status)
@@ -32,9 +34,9 @@ namespace Example2.UserOnlineChecking
             try
             {
                 if (status)
-                    _resultAdapter.IsOnline(_infoProvider.UserName);
+                    _resultHandler.IsOnline(_infoProvider.UserName);
                 else
-                    _resultAdapter.IsOffline(_infoProvider.UserName);
+                    _resultHandler.IsOffline(_infoProvider.UserName);
             }
             catch (Exception ex)
             {
@@ -54,12 +56,20 @@ namespace Example2.UserOnlineChecking
         {
             try
             {
-                var status = GetStatus(_infoProvider.UserName);
-                Process(status);
+                try
+                {
+                    var status = GetStatus(_infoProvider.UserName);
+                    Process(status);
+                }
+                catch (InvalidOperationException)
+                {
+                    _resultHandler.NotFound(_infoProvider.UserName);
+                }
             }
-            catch(InvalidOperationException)
+            catch (Exception ex)
             {
-                _resultAdapter.NotFound(_infoProvider.UserName);
+                _errorLogger.Log(ex, this);
+                _resultHandler.ErrorHappend(ex);
             }
         }
     }

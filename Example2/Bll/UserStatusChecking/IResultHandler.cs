@@ -1,6 +1,8 @@
-﻿namespace Example2.UserOnlineChecking.ResultAdapter
+﻿using Example2.Common;
+
+namespace Example2.Bll.UserStatusChecking
 {
-    public interface IResultAdapter
+    public interface IResultHandler : IErrorHandler
     {
         void NotFound(string user);
 

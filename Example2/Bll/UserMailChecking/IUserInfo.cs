@@ -1,6 +1,4 @@
-using Example2.StatusChecker;
-
-namespace Example2.UserOnlineChecking
+namespace Example2.Bll.UserMailChecking
 {
     public interface IUserInfo
     {

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using Example2.Common;
 
-namespace Example2.UserMailChecking
+namespace Example2.Bll.UserMailChecking
 {
-    public interface IResultHandler<TMessage>
+    public interface IResultHandler<TMessage> : IErrorHandler
     {
         void ShowNoMessagesInfo();
 
